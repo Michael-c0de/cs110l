@@ -1,0 +1,5 @@
+{
+    "files.associations": {
+        "siginfo_t.h": "c"
+    }
+}

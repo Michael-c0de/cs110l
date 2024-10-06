@@ -1,5 +1,7 @@
 use std::env;
 
+use nix::libc::EXIT_FAILURE;
+
 mod open_file;
 mod process;
 mod ps_utils;
@@ -10,11 +12,34 @@ fn main() {
         println!("Usage: {} <name or pid of target>", args[0]);
         std::process::exit(1);
     }
-    #[allow(unused)] // TODO: delete this line for Milestone 1
+    // #[allow(unused)] // TODO: delete this line for Milestone 1
     let target = &args[1];
 
     // TODO: Milestone 1: Get the target Process using psutils::get_target()
-    unimplemented!();
+    // unimplemented!();
+    match ps_utils::get_target(&target) {
+        Ok(Some(process)) => {
+            let pid = process.pid;
+            println!("Found pid {}", pid);
+            process.print();
+            for childs in ps_utils::get_child_processes(pid).iter() {
+                for child in childs {
+                    child.print();
+                }
+            }
+        }
+        Ok(None) => {
+            println!(
+                "Target \"{}\" did not match any running PIDs or executables",
+                target
+            );
+            std::process::exit(EXIT_FAILURE);
+        }
+        Err(e) => {
+            println!("Error retrieving target: {}", e);
+            std::process::exit(EXIT_FAILURE);
+        }
+    }
 }
 
 #[cfg(test)]
